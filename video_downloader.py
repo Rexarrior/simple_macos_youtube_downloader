@@ -18,10 +18,23 @@ class VideoDownloader(tk.Tk):
         ttk.Label(frame, text="URL:").pack(anchor=tk.W)
         self.url_entry = ttk.Entry(frame, width=80)
         self.url_entry.pack(fill=tk.X, pady=(0, 10))
-        self.url_entry.bind("<Command-a>", lambda e: self.url_entry.select_range(0, tk.END) or "break")
-        self.url_entry.bind("<Command-v>", lambda e: self.url_entry.event_generate("<<Paste>>") or "break")
-        self.url_entry.bind("<Command-c>", lambda e: self.url_entry.event_generate("<<Copy>>") or "break")
-        self.url_entry.bind("<Command-x>", lambda e: self.url_entry.event_generate("<<Cut>>") or "break")
+        def cmd_a(e): self.url_entry.select_range(0, tk.END); return "break"
+        def cmd_v(e): self.url_entry.event_generate("<<Paste>>"); return "break"
+        def cmd_c(e): self.url_entry.event_generate("<<Copy>>"); return "break"
+        def cmd_x(e): self.url_entry.event_generate("<<Cut>>"); return "break"
+
+        self.url_entry.bind("<Command-a>", cmd_a)
+        self.url_entry.bind("<Command-v>", cmd_v)
+        self.url_entry.bind("<Command-c>", cmd_c)
+        self.url_entry.bind("<Command-x>", cmd_x)
+        self.url_entry.bind("<Command-A>", cmd_a)
+        self.url_entry.bind("<Command-V>", cmd_v)
+        self.url_entry.bind("<Command-C>", cmd_c)
+        self.url_entry.bind("<Command-X>", cmd_x)
+        self.url_entry.bind("<Command-ф>", cmd_a)
+        self.url_entry.bind("<Command-м>", cmd_v)
+        self.url_entry.bind("<Command-с>", cmd_c)
+        self.url_entry.bind("<Command-ч>", cmd_x)
 
         self.download_btn = ttk.Button(frame, text="Download", command=self.download)
         self.download_btn.pack()
