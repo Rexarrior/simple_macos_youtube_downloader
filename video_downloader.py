@@ -22,14 +22,13 @@ class VideoDownloader(tk.Tk):
         self.download_btn = ttk.Button(frame, text="Download", command=self.download)
         self.download_btn.pack()
 
-        self.log_area = scrolledtext.ScrolledText(frame, width=80, height=20, state=tk.DISABLED, font=("Courier", 9))
+        self.log_area = scrolledtext.ScrolledText(frame, width=80, height=20, font=("Courier", 9))
         self.log_area.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        self.log_area.bind("<Key>", lambda e: "break")
 
     def log(self, text):
-        self.log_area.config(state=tk.NORMAL)
         self.log_area.insert(tk.END, text + "\n")
         self.log_area.see(tk.END)
-        self.log_area.config(state=tk.DISABLED)
 
     def getDownloadsDir(self):
         if sys.platform == "darwin":
@@ -52,9 +51,7 @@ class VideoDownloader(tk.Tk):
             return
 
         self.download_btn.config(state=tk.DISABLED)
-        self.log_area.config(state=tk.NORMAL)
         self.log_area.delete("1.0", tk.END)
-        self.log_area.config(state=tk.DISABLED)
 
         threading.Thread(target=self._download_task, args=(url,), daemon=True).start()
 
