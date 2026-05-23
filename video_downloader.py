@@ -18,6 +18,10 @@ class VideoDownloader(tk.Tk):
         ttk.Label(frame, text="URL:").pack(anchor=tk.W)
         self.url_entry = ttk.Entry(frame, width=80)
         self.url_entry.pack(fill=tk.X, pady=(0, 10))
+        self.url_entry.bind("<Command-a>", lambda e: self.url_entry.select_range(0, tk.END) or "break")
+        self.url_entry.bind("<Command-v>", lambda e: self.url_entry.event_generate("<<Paste>>") or "break")
+        self.url_entry.bind("<Command-c>", lambda e: self.url_entry.event_generate("<<Copy>>") or "break")
+        self.url_entry.bind("<Command-x>", lambda e: self.url_entry.event_generate("<<Cut>>") or "break")
 
         self.download_btn = ttk.Button(frame, text="Download", command=self.download)
         self.download_btn.pack()
