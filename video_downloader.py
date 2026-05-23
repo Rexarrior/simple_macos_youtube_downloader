@@ -73,9 +73,17 @@ class VideoDownloader(tk.Tk):
         threading.Thread(target=self._download_task, args=(url,), daemon=True).start()
 
     def _download_task(self, url):
-        output_template = os.path.join(self.getDownloadsDir(), "%(title)s.%(ext)s")
+        downloads = self.getDownloadsDir()
+
+        self.log("[INFO] Getting video title...")
+        title_proc = subprocess.run(["yt-dlp", "--get-title", "--no-playlist", url], capture_output=True, text=True)
+        video_title = title_proc.stdout.strip().split("\n")[-1]
+        safe_title = "".join(c for c in video_title if c not in '/\\:*?"<>|')[:100]
+        self.log(f"[INFO] Title: {safe_title}")
+
+        output_template = os.path.join(downloads, f"{safe_title}.%(ext)s")
         self.log(f"[DOWNLOAD] Starting...")
-        self.log(f"[INFO] Saving to: {self.getDownloadsDir()}")
+        self.log(f"[INFO] Saving to: {downloads}")
 
         ret = self.run_process(["yt-dlp", "-o", output_template, "--merge-output-format", "mp4", url])
 
@@ -84,14 +92,20 @@ class VideoDownloader(tk.Tk):
             self.download_btn.config(state=tk.NORMAL)
             return
 
-        mp4_files = [f for f in os.listdir(self.getDownloadsDir()) if f.endswith(".mp4") and not f.startswith("fixed")]
+        mp4_files = [f for f in os.listdir(downloads) if f.endswith(".mp4") and f != "fixed.mp4" and safe_title in f]
         if mp4_files:
-            latest = max([os.path.join(self.getDownloadsDir(), f) for f in mp4_files], key=os.path.getmtime)
-            fixed_path = os.path.join(self.getDownloadsDir(), "fixed.mp4")
+            original_path = os.path.join(downloads, mp4_files[0])
+            fixed_path = os.path.join(downloads, "fixed.mp4")
             self.log(f"[REMUX] Converting to MP4...")
-            ret = self.run_process(["ffmpeg", "-i", latest, "-c", "copy", "-y", fixed_path])
+            ret = self.run_process(["ffmpeg", "-i", original_path, "-c", "copy", "-y", fixed_path])
             if ret == 0:
-                self.log(f"[DONE] Saved: {fixed_path}")
+                try:
+                    os.remove(original_path)
+                    final_path = os.path.join(downloads, f"{safe_title}.mp4")
+                    os.rename(fixed_path, final_path)
+                    self.log(f"[DONE] Saved: {final_path}")
+                except Exception as e:
+                    self.log(f"[ERROR] Failed to rename: {e}")
             else:
                 self.log(f"[ERROR] Remux failed")
         else:
